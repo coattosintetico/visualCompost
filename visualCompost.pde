@@ -3,33 +3,36 @@
 // rules, slightly modified.
 //
 
-// import the library to export a video
+// library to export directly a video
 import com.hamoid.*;
 VideoExport videoExport;
 
+// image objects
 PImage source;
 PImage img;
+//
+// CHANGE THIS TO USE ON OTHER IMAGES
+// it has to be on your processing "data" sketch folder
+//
+String filename = "IMG_6887.jpg";
+// own object that manages the Game of Life cellular
+// automata, with the board and the rules
 GOL gol;
 
+// boolean variables to control the flow of the animation
 boolean imageDisplayed = false;
 boolean imageResized = false;
 boolean brightnessThresholdApplied = false;
 boolean golCreated = false;
 
-// boolean recording = false;
-
-boolean golInitiated = false;
-
 void setup() {
   size(1024, 576);
-  source = loadImage("IMG_6887.jpg");
-  // // resize image with 100 pixels width, maintaining its proportion
-  // source.resize(100, 0);
-  // PImage destination = brightnessThreshold(source, 170);
-  // destination.loadPixels();
-  // gol = new GOL(destination);
+  // load the image that is going to be displayed
+  source = loadImage(filename);
   background(255);
   frameRate(12);
+
+  // to record sketch as a video
   videoExport = new VideoExport(this, "visualCompost.mp4");
   videoExport.setFrameRate(12);
   videoExport.startMovie();
@@ -52,8 +55,6 @@ void draw() {
     } else {
       imageResized = true;
       println("image resized");
-  // BEGGINING RECORDING
-      // recording = true;
     }
   }
 
@@ -78,14 +79,11 @@ void draw() {
 
   videoExport.saveFrame();
 
-  if (millis() > 30000) {
+  if (millis() > 50000) {
     videoExport.endMovie();
     exit();
   }
 
-//  if (recording) {
-// saveFrame("output/blackSpot_####.png");
-//  }
 }
 
 void keyPressed() {
@@ -95,14 +93,5 @@ void keyPressed() {
   }
 }
 
-void mousePressed() {
-}
-
-// void initgameoflife() {
-//   img = brightnessThreshold(source, 170);
-//   gol = new GOL(img);
-//   gol.display();
-//   golInitiated = true;
-// }
-
-// include in the GOL class a method called setColumnsRowsAsWidthHeight()
+// include a possibility to only modify the 0's, and if it's 1 (AKA black) leave it be. 
+// like an ink spot expanding.
