@@ -4,17 +4,20 @@
 //
 
 // library to export directly a video
-import com.hamoid.*;
-VideoExport videoExport;
+// EDITED: currently not working with Processing 4
+// import com.hamoid.*;
+// VideoExport videoExport;
 
 // image objects
 PImage source;
 PImage img;
-//
+
 // CHANGE THIS TO USE ON OTHER IMAGES
 // it has to be on your processing "data" sketch folder
-//
-String filename = "IMG_6887.jpg";
+////////////////////////////////////
+String filename = "IMG_6887.jpg"; //
+////////////////////////////////////
+
 // own object that manages the Game of Life cellular
 // automata, with the board and the rules
 GOL gol;
@@ -33,17 +36,18 @@ void setup() {
   frameRate(12);
 
   // to record sketch as a video
-  videoExport = new VideoExport(this, "visualCompost.mp4");
-  videoExport.setFrameRate(12);
-  videoExport.startMovie();
+  // EDITED: currently not working with Processing 4
+  // videoExport = new VideoExport(this, "visualCompost.mp4");
+  // videoExport.setFrameRate(12);
+  // videoExport.startMovie();
 }
 
 void draw() {
 
   if ((millis() > 2000) && (!imageDisplayed)) {
-  displayCentered(source, true);
-  imageDisplayed = true;
-  println("initial image displayed");
+    displayCentered(source, true);
+    imageDisplayed = true;
+    println("initial image displayed");
   }
 
   if ((millis() > 5000) && (!imageResized)) {
@@ -73,14 +77,17 @@ void draw() {
 
   if (millis() > 11000) {
     gol.generate();
-    gol.blackSpot();
+    // Method to generate a growing black spot in the middle of the image:
+    // gol.blackSpot();
     gol.display();
   }
 
-  videoExport.saveFrame();
+  // EDITED: currently not working with Processing 4
+  // videoExport.saveFrame();
 
   if (millis() > 50000) {
-    videoExport.endMovie();
+    // EDITED: currently not working with Processing 4
+    // videoExport.endMovie();
     exit();
   }
 
@@ -88,7 +95,8 @@ void draw() {
 
 void keyPressed() {
   if (key == 'q') {
-    videoExport.endMovie();
+    // EDITED: currently not working with Processing 4
+    // videoExport.endMovie();
     exit();
   }
 }

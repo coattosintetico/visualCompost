@@ -3,7 +3,7 @@
 // black and white pixels are going to be displayed, and
 // the rules applied to them. Also has a blackSpot method,
 // to create a black circle that grows incrementally, 
-// based on the generation it's in
+// based on the generation it's in.
 //
 
 class GOL {
