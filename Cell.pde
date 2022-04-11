@@ -27,9 +27,9 @@ class Cell {
 
   void display() {
     if (previous == 0 && state == 1) fill(0,0,255);
-    else if (state == 1) fill(0);
+    else if (state == 1) fill(255);
     else if (previous == 1 && state == 0) fill(255,0,0);
-    else fill(255); 
+    else fill(0); 
     noStroke();
     rect(x, y, w, w);
   }

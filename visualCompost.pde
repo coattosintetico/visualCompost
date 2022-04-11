@@ -17,7 +17,7 @@ String[] filenames = {"IMG_6887.jpg", "IMG_7456.jpg", "mabel.png"}; //
 GOL gol;
 
 // boolean variables to control the flow of the animation
-boolean imageDisplayed = false;
+boolean displayImage = true;
 boolean brightnessThresholdApplied = false;
 boolean golCreated = false;
 
@@ -39,6 +39,16 @@ void draw() {
   gol.display();
   
   // display an image at the cursor position
-  imageMode(CENTER);
-  image(img, mouseX, mouseY);
+  if (displayImage) {
+    imageMode(CENTER);
+    image(img, mouseX, mouseY);
+  }
+}
+
+// add image to the GOL board on click
+void mousePressed() {
+  displayImage = false;
+  int x = (int) mouseX - img.width/2;
+  int y = (int) mouseY - img.height/2;
+  gol.absorb(img, x, y);
 }

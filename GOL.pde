@@ -83,7 +83,6 @@ class GOL {
         // NOTE: there should be a better way to check this. Maybe design a
         // specific function from brightnessThreshold
         int s;
-        println(newImg.pixels[loc]);
         if (newImg.pixels[loc] == color(255)) {
           s = 0;
         } else {
@@ -94,9 +93,6 @@ class GOL {
         board[i][j].setState(s);
       }
     }
-    print("updated ");
-    print(cellsUpdated);
-    println(" cells");
   }
 
   // Draw the cells with the inner rules that they have
