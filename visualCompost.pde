@@ -1,54 +1,54 @@
-//
-// Decompose an image using cellular automata through the Game of Life 
-// rules, slightly modified.
-//
+/*
+  Decompose an image using cellular automata through the Game of Life rules,
+  slightly modified.
+*/
 
-// image objects
-PImage img;
-
-// CHANGE THIS TO USE ON OTHER IMAGES
-// it has to be on your processing "data" sketch folder
-////////////////////////////////////
+// Image objects
+PImage[] imgs;
+int imgIndex;
 String[] filenames = {"IMG_6887.jpg", "IMG_7456.jpg", "mabel.png"}; //
-////////////////////////////////////
 
-// own object that manages the Game of Life cellular
-// automata, with the board and the rules
+// Board object
 GOL gol;
 
-// boolean variables to control the flow of the animation
-boolean displayImage = true;
-boolean brightnessThresholdApplied = false;
-boolean golCreated = false;
+float countdown = 2000.0;
+float tDisplayed;
 
 void setup() {
   size(1280, 720);
   frameRate(60);
-  // load the image that is going to be displayed
-  img = loadImage(filenames[0]);
-  img.resize(600, 0);
+  // Load the images that are going to be displayed
+  imgs = new PImage[filenames.length];
+  for (int i = 0; i < filenames.length; i++) {
+    imgs[i] = loadImage(filenames[i]);
+    imgs[i].resize(600, 0);
+  }
+  imgIndex = 0;
   // initialize the GOL
   gol = new GOL();
 }
 
 void draw() {
-  background(20);
+  // background(20);
 
-  // compute and display the cellular automata
-  gol.generate();
-  gol.display();
-  
-  // display an image at the cursor position
-  if (displayImage) {
+  // compute and display the cellular automata only each 5 frames
+  if (frameCount % 5 == 0) {
+    gol.generate();
+    gol.display();
+  }
+
+  // display an image at the cursor position if countdown is over
+  if (millis() - tDisplayed > countdown) {
     imageMode(CENTER);
-    image(img, mouseX, mouseY);
+    image(imgs[imgIndex], mouseX, mouseY);
   }
 }
 
 // add image to the GOL board on click
 void mousePressed() {
-  displayImage = false;
-  int x = (int) mouseX - img.width/2;
-  int y = (int) mouseY - img.height/2;
-  gol.absorb(img, x, y);
+  int x = (int) mouseX - imgs[imgIndex].width/2;
+  int y = (int) mouseY - imgs[imgIndex].height/2;
+  gol.absorb(imgs[imgIndex], x, y);
+  imgIndex = (imgIndex + 1) % imgs.length;
+  tDisplayed = millis();
 }

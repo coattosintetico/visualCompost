@@ -63,22 +63,18 @@ class GOL {
   }
 
   // absorb the given image into the grid of cells
-  // overrides the current state of the cell
   void absorb(PImage img, int imgX, int imgY) {
 
-    img.resize(img.width/w, img.height/w);
     PImage newImg = brightnessThreshold(img, 125);
+    newImg.resize(newImg.width/w, newImg.height/w);
     newImg.loadPixels();
     // Convert the given coordinates from "pixels in the screen" to "board
     // coordinates" (scale by the cell width)
     int boardStartX = (int) imgX/w;
     int boardStartY = (int) imgY/w;
-    int widthScaled  = (int) img.width;
-    int heightScaled = (int) img.height;
-    int cellsUpdated = 0;
     // Iterate over the corresponding part of board
-    for (int i = boardStartX; i < boardStartX+widthScaled; i++) {
-      for (int j = boardStartY; j < boardStartY+heightScaled; j++) {
+    for (int i = boardStartX; i < boardStartX+newImg.width; i++) {
+      for (int j = boardStartY; j < boardStartY+newImg.height; j++) {
         int loc = (i-boardStartX) + (j-boardStartY)*newImg.width;
         // NOTE: there should be a better way to check this. Maybe design a
         // specific function from brightnessThreshold
@@ -87,7 +83,6 @@ class GOL {
           s = 0;
         } else {
           s = 1;
-          cellsUpdated++;
         }
         // Set every cell to the state given by the image
         board[i][j].setState(s);
