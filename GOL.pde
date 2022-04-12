@@ -53,39 +53,53 @@ class GOL {
         neighbors -= board[x][y].previous;
 
         // 2. RULES OF LIFE
-        if      ((board[x][y].state == 1) && (neighbors >  7)) board[x][y].setState(1); // Avoid huge spot removal
-        else if ((board[x][y].state == 1) && (neighbors <  2)) board[x][y].setState(0); // Loneliness
+        if      ((board[x][y].state == 1) && (neighbors <  2)) board[x][y].setState(0); // Loneliness
         else if ((board[x][y].state == 1) && (neighbors >  3)) board[x][y].setState(0); // Overpopulation
         else if ((board[x][y].state == 0) && (neighbors == 3)) board[x][y].setState(1); // Reproduction
         // else do nothing!
+
+        // 3. COLOR UPDATE
+        int r = 0, g = 0, b = 0;
+        int numColors = 0;
+        // if it was dead but is now alive
+        if ((board[x][y].previous == 0) && (board[x][y].state == 1)) {
+          // get color of alive neighbors
+          for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
+              if (board[(x+i+columns)%columns][(y+j+rows)%rows].state == 1) {
+                color c = board[(x+i+columns)%columns][(y+j+rows)%rows].c;
+                r += red(c);
+                g += green(c);
+                b += blue(c);
+                numColors++;
+              }
+            }
+          }
+          r /= numColors; g /= numColors; b /= numColors;
+          board[x][y].setColor(color(r, g, b));
+        }
       }
     }
   }
 
-  // absorb the given image into the grid of cells
-  void absorb(PImage img, int imgX, int imgY) {
-
-    PImage newImg = brightnessThreshold(img, 125);
-    newImg.resize(newImg.width/w, newImg.height/w);
-    newImg.loadPixels();
+  // Absorb the given image into the grid of cells
+  void absorb(PImage imgSrc, int imgX, int imgY) {
+    // copy the image into another one
+    PImage img = createImage(imgSrc.width, imgSrc.height, RGB);
+    img.copy(imgSrc, 0, 0, imgSrc.width, imgSrc.height, 0, 0, imgSrc.width, imgSrc.height);
+    img.resize(img.width/w, img.height/w);
+    img.loadPixels();
     // Convert the given coordinates from "pixels in the screen" to "board
     // coordinates" (scale by the cell width)
     int boardStartX = (int) imgX/w;
     int boardStartY = (int) imgY/w;
     // Iterate over the corresponding part of board
-    for (int i = boardStartX; i < boardStartX+newImg.width; i++) {
-      for (int j = boardStartY; j < boardStartY+newImg.height; j++) {
-        int loc = (i-boardStartX) + (j-boardStartY)*newImg.width;
-        // NOTE: there should be a better way to check this. Maybe design a
-        // specific function from brightnessThreshold
-        int s;
-        if (newImg.pixels[loc] == color(255)) {
-          s = 0;
-        } else {
-          s = 1;
-        }
-        // Set every cell to the state given by the image
-        board[i][j].setState(s);
+    for (int i = boardStartX; i < boardStartX+img.width; i++) {
+      for (int j = boardStartY; j < boardStartY+img.height; j++) {
+        int loc = (i-boardStartX) + (j-boardStartY)*img.width;
+        // Set the color of the cell according to the image
+        color c = img.pixels[loc];
+        board[i][j].setColor(c);
       }
     }
   }

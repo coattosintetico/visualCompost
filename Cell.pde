@@ -7,13 +7,15 @@ class Cell {
 
   int state;
   int previous;
+  color c;
 
   Cell(float x_, float y_, float w_) {
     x = x_;
     y = y_;
     w = w_;
     
-    state = 0;
+    // set a random state which is 0 or 1
+    state = (int) random(2);
     previous = state;
   }
   
@@ -25,11 +27,12 @@ class Cell {
     state = s;
   }
 
+  void setColor(color c_) {
+    c = c_;
+  }
+
   void display() {
-    if (previous == 0 && state == 1) fill(0,0,255);
-    else if (state == 1) fill(255);
-    else if (previous == 1 && state == 0) fill(255,0,0);
-    else fill(0); 
+    fill(c);
     noStroke();
     rect(x, y, w, w);
   }

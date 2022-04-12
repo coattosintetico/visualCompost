@@ -6,7 +6,7 @@
 // Image objects
 PImage[] imgs;
 int imgIndex;
-String[] filenames = {"IMG_6887.jpg", "IMG_7456.jpg", "mabel.png"}; //
+String[] filenames = {"IMG_6887.jpg", "IMG_7456.jpg", "mabel.png"};
 
 // Board object
 GOL gol;
@@ -32,10 +32,10 @@ void draw() {
   // background(20);
 
   // compute and display the cellular automata only each 5 frames
-  if (frameCount % 5 == 0) {
+  // if (frameCount % 5 == 0) {
     gol.generate();
     gol.display();
-  }
+  // }
 
   // display an image at the cursor position if countdown is over
   if (millis() - tDisplayed > countdown) {
