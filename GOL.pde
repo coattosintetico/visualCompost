@@ -75,8 +75,22 @@ class GOL {
               }
             }
           }
+          float prob = random(1);
+          // if (prob < 0.01) {
+          //   r /= numColors; g /= numColors; b = b % 255;
+          // } else if (prob > 0.99) {
+          //   r /= numColors; g = g % 255; b /= numColors;
+          // } else if ((prob > 0.495) && (prob < 0.505)) {
+          //   r = r % 255; g /= numColors; b /= numColors;
+          // } else {
+          //   r /= numColors; g /= numColors; b /= numColors;
+          // }
           r /= numColors; g /= numColors; b /= numColors;
-          board[x][y].setColor(color(r, g, b));
+          if (prob < 0.001) {
+            board[x][y].setColor(color(map(int(random(2)), 0, 1, 0, 255)));
+          } else {
+            board[x][y].setColor(color(r, g, b));
+          }
         }
       }
     }
@@ -100,6 +114,15 @@ class GOL {
         // Set the color of the cell according to the image
         color c = img.pixels[loc];
         board[i][j].setColor(c);
+      }
+    }
+  }
+
+  // Set a random state in each cell
+  void randomize() {
+    for (int i = 0; i < columns; i++) {
+      for (int j = 0; j < rows; j++) {
+        board[i][j].setState(int(random(2)));
       }
     }
   }
