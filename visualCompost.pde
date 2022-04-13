@@ -6,7 +6,7 @@
 // Image objects
 PImage[] imgs;
 int imgIndex;
-String[] filenames = {"IMG_6887.jpg", "IMG_7456.jpg", "mabel.png"};
+String[] filenames;
 
 // Board object
 GOL gol;
@@ -18,6 +18,7 @@ void setup() {
   size(1280, 720);
   frameRate(60);
   // Load the images that are going to be displayed
+  filenames = listFileNames("data/");
   imgs = new PImage[filenames.length];
   for (int i = 0; i < filenames.length; i++) {
     imgs[i] = loadImage(filenames[i]);
@@ -51,4 +52,17 @@ void mousePressed() {
   gol.absorb(imgs[imgIndex], x, y);
   imgIndex = (imgIndex + 1) % imgs.length;
   tDisplayed = millis();
+}
+
+void keyPressed() {
+  if (key == ' ') {
+    // randomize the GOL
+    gol.randomize();
+  }
+}
+
+String[] listFileNames(String dir) {
+  File f = new File(dir);
+  String[] files = f.list();
+  return files;
 }
