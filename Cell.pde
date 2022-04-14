@@ -14,8 +14,7 @@ class Cell {
     y = y_;
     w = w_;
     
-    // set a random state which is 0 or 1
-    state = (int) random(2);
+    state = 0;
     previous = state;
   }
   
@@ -32,8 +31,16 @@ class Cell {
   }
 
   void display() {
-    fill(c);
-    noStroke();
-    rect(x, y, w, w);
+    // if the cell was dead and is now alive, draw a white circle
+    if ((state == 1 && previous == 0) && (displayCells)) {
+      fill(0);
+      noStroke();
+      rectMode(CORNER);
+      rect(x, y, w, w);
+    } else {
+      fill(c);
+      noStroke();
+      rect(x, y, w, w);
+    }
   }
 }
