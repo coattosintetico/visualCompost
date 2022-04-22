@@ -24,6 +24,7 @@ float[] appearances = {102.8, 105.7, 106.4, 106.9, 107.5, 108.8,
   111.7, 112.8, 114.8, 117.7, 118.9, 120.8, 123.8, 124.9, 126.7,
   129.8, 130.8, 132.9, 135.7, 136.8, 138.7, 141.6, 142.8, 144.7,
   147.7, 148.8, 150.8, 153.7, 154.8, 156.7, 159.7, 160.8, 162.8};
+int indexEvap = 0;
 
 void setup() {
   size(1280, 720);
@@ -109,17 +110,6 @@ void draw() {
     }
   }
 
-  // if (fc == stf(32.57)) { // show images
-  //   positions = new PVector[imgs.length];
-  //   for (int i = 0; i < imgs.length; i++) {
-  //     int x = (int) random(0, width);
-  //     int y = (int) random(0, height);
-  //     positions[i] = new PVector(x, y);
-  //     imageMode(CENTER);
-  //     image(imgs[i], x, y);
-  //   }
-  // }
-
   if (fc == stf(32.57)) { // absorb all images
     gol = new GOL();
     for (int i = 0; i < imgs.length; i++) {
@@ -161,12 +151,11 @@ void draw() {
   }
 
   if ((fc > stf(100.7)) && (fc < stf(165.9))) { // evaporate while luchando por la vida
-    int index = 0;
     for (int i = 0; i < appearances.length; i++) {
       if (fc == stf(appearances[i])) {
-        gol.absorb(imgs[index], int(random(0, width)-imgs[index].width), int(random(0, height)-imgs[index].height));
-        index++;
-        index = index % imgs.length;
+        gol.absorb(imgs[indexEvap], int(random(0, width)-imgs[indexEvap].width), int(random(0, height)-imgs[indexEvap].height));
+        indexEvap++;
+        indexEvap = indexEvap % imgs.length;
       }
     }
     displayCells = false;
@@ -176,23 +165,24 @@ void draw() {
   }
 
   if (fc == stf(165.9)) gol.randomize(); // randomize
-  if ((fc > stf(165.9)) && (fc < stf(256.5))) { // 
+  if ((fc > stf(165.9)) && (fc < stf(245))) { // 
     displayCells = true;
     mode = "delete";
     gol.generate();
     gol.display();
   }
 
-
-  if (fc == stf(256.5)) exit();
-  // gol.generate();
-  // gol.display();
-
-  // // display an image at the cursor position if countdown is over
-  // if ((millis() - tDisplayed > countdown) && (imgMode == "placer")) {
-  //   imageMode(CENTER);
-  //   image(imgs[imgIndex], mouseX, mouseY);
+  if (fc == stf(245)) {
+    displayCells = false;
+    gol.generate();
+    gol.display();
+  }
+  // if ((fc < stf(255)) && (fc > stf(265))) { //
+  //   displayCells = false;
+  //   gol.display();
   // }
+
+  if (fc == stf(255)) exit();
   saveFrame("animation/#####.png");
 }
 

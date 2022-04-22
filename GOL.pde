@@ -87,7 +87,7 @@ class GOL {
               color cClar = board[x][y].c;
               board[x][y].setColor(color(red(cClar)+10, green(cClar)+10, blue(cClar)+10));
               break;
-            case "shift":
+            case "delete":
               color cShift = board[x][y].c;
               int shift = 50;
               board[x][y].setColor(color(red(cShift)+random(shift), green(cShift)+random(shift), blue(cShift)+random(shift)));
