@@ -1,92 +1,235 @@
-//
-// Decompose an image using cellular automata through the Game of Life 
-// rules, slightly modified.
-//
+/*
+  Decompose an image using cellular automata through the Game of Life rules,
+  slightly modified.
+*/
 
-// library to export directly a video
-// EDITED: currently not working with Processing 4
-// import com.hamoid.*;
-// VideoExport videoExport;
+// Image objects
+PImage[] imgs;
+int imgIndex;
+String[] filenames;
 
-// image objects
-PImage source;
-PImage img;
-
-// CHANGE THIS TO USE ON OTHER IMAGES
-// it has to be on your processing "data" sketch folder
-////////////////////////////////////
-String[] filenames = {"IMG_6887.jpg", "IMG_7456.jpg"}; //
-////////////////////////////////////
-
-// own object that manages the Game of Life cellular
-// automata, with the board and the rules
+boolean eat = false;
+String mode;
+String imgMode;
+// Board object
 GOL gol;
 
-// boolean variables to control the flow of the animation
-boolean imageDisplayed = false;
-boolean brightnessThresholdApplied = false;
-boolean golCreated = false;
+float countdown = 10.0;
+float tDisplayed;
+
+// Variables for the animation
+PVector[] positions;
+boolean displayCells;
+float[] appearances = {102.8, 105.7, 106.4, 106.9, 107.5, 108.8,
+  111.7, 112.8, 114.8, 117.7, 118.9, 120.8, 123.8, 124.9, 126.7,
+  129.8, 130.8, 132.9, 135.7, 136.8, 138.7, 141.6, 142.8, 144.7,
+  147.7, 148.8, 150.8, 153.7, 154.8, 156.7, 159.7, 160.8, 162.8};
+int indexEvap = 0;
 
 void setup() {
-  size(1024, 576);
-  // load the image that is going to be displayed
-  source = loadImage(filenames[0]);
+  size(1280, 720);
+  // frameRate(24); not necessary to maintain the same framerate
   background(255);
-  frameRate(12);
-
-  // to record sketch as a video
-  // EDITED: currently not working with Processing 4
-  // videoExport = new VideoExport(this, "visualCompost.mp4");
-  // videoExport.setFrameRate(12);
-  // videoExport.startMovie();
+  // Load the images that are going to be displayed
+  filenames = listFileNames("data/");
+  imgs = new PImage[filenames.length];
+  for (int i = 0; i < filenames.length; i++) {
+    imgs[i] = loadImage(filenames[i]);
+    if (imgs[i].width > imgs[i].height) {
+      imgs[i].resize((int) random(500, 700), 0);
+    } else {
+      imgs[i].resize(0 , (int) random(200, 400));
+    }
+  }
+  imgIndex = 0;
+  // initialize the GOL
+  mode = "distort";
+  imgMode = "placer";
+  
 }
 
 void draw() {
+  int fc = frameCount;
+  if ((fc > stf(4.0)) && (fc < stf(5.4))) { // random imgs
+    // Display all images at random locations
+    for (int i = 0; i < imgs.length; i++) {
+      imageMode(CENTER);
+      image(imgs[i], random(width), random(height));
+    }
+  }
+  if (fc == stf(5.4)) background(255);
 
-  if ((millis() > 500) && (!imageDisplayed)) {
-    displayCentered(source, true);
-    imageDisplayed = true;
-    println("initial image displayed");
+  if ((fc > stf(9.7)) && (fc < stf(10.8))) { // random imgs
+    // Display all images at random locations
+    for (int i = 0; i < imgs.length; i++) {
+      imageMode(CENTER);
+      image(imgs[i], random(width), random(height));
+    }
+  }
+  if (fc == stf(10.8)) background(255);
+
+  if ((fc > stf(15.05)) && (fc < stf(16.15))) { // random imgs and maintain
+    background(255);
+    // Display all images at random locations
+    for (int i = 0; i < imgs.length; i++) {
+      imageMode(CENTER);
+      image(imgs[i], random(width), random(height));
+    }
   }
 
-  if ((millis() > 1000) && (!brightnessThresholdApplied)) {
-    img = brightnessThreshold(source, 170);
-    displayCentered(img, false);
-    brightnessThresholdApplied = true;
-    println("brightnessThreshold applied");
+  if ((fc > stf(19.4)) && (fc < stf(31.54))) { // random imgs, noise in crescendo
+    background(255);
+    // Display all images at random locations
+    for (int i = 0; i < imgs.length; i++) {
+      tint(255, 255);
+      imageMode(CENTER);
+      image(imgs[i], random(width), random(height));
+    }
+    // draw random white and black noise on screen
+    PImage noise = createImage(width, height, RGB);
+    noise.loadPixels();
+    for (int i = 0; i < noise.pixels.length; i++) {
+      if (random(1) < 0.5) {
+        noise.pixels[i] = color(255);
+      } else {
+        noise.pixels[i] = color(0);
+      }
+    }
+    // display noise at half opacity
+    tint(255, map(
+      fc, stf(19.4), stf(30.5), 0, 255
+      ));
+    imageMode(CORNER);
+    image(noise, 0, 0, width, height);
   }
 
-  if ((millis() > 1200) && (!golCreated)) {
-    gol = new GOL(img);
+  if ((fc > stf(31.54)) && (fc < stf(32.57))) { // random imgs
+    for (int i = 0; i < imgs.length; i++) {
+      imageMode(CENTER);
+      image(imgs[i], random(width), random(height));
+    }
+  }
+
+  if (fc == stf(32.57)) { // absorb all images
+    gol = new GOL();
+    for (int i = 0; i < imgs.length; i++) {
+      // int imgX = (int) positions[i].x-imgs[i].width/2;
+      // int imgY = (int) positions[i].y-imgs[i].height/2;
+      int x = (int) random(0, width);
+      int y = (int) random(0, height);
+      gol.absorb(imgs[i], x, y);
+    }
+    displayCells = false;
     gol.display();
-    golCreated = true;
   }
 
-  if (millis() > 1500) {
+  if ((fc > stf(35.57)) && (fc < stf(40.8))) { // run showing cells
+    displayCells = true;
     gol.generate();
-    // Method to generate a growing black spot in the middle of the image:
-    // gol.blackSpot();
     gol.display();
   }
 
-  // EDITED: currently not working with Processing 4
-  // videoExport.saveFrame();
-
-  if (millis() > 50000) {
-    // EDITED: currently not working with Processing 4
-    // videoExport.endMovie();
-    exit();
+  if (fc == stf(40.8)) gol.randomize();        // randomize and
+  if ((fc > stf(40.8))  && (fc < stf(50.8))) { // run hiding cells
+    displayCells = false;
+    gol.generate();
+    gol.display();
   }
 
+  // randomize here?
+  if ((fc > stf(50.8))  && (fc < stf(80.6))) { // run showing cells
+    displayCells = true;
+    gol.generate();
+    gol.display();
+  }
+
+  if ((fc > stf(80.6)) && (fc < stf(100.7))) { // evaporate
+    displayCells = false;
+    mode = "delete";
+    gol.generate();
+    gol.display();
+  }
+
+  if ((fc > stf(100.7)) && (fc < stf(165.9))) { // evaporate while luchando por la vida
+    for (int i = 0; i < appearances.length; i++) {
+      if (fc == stf(appearances[i])) {
+        gol.absorb(imgs[indexEvap], int(random(0, width)-imgs[indexEvap].width), int(random(0, height)-imgs[indexEvap].height));
+        indexEvap++;
+        indexEvap = indexEvap % imgs.length;
+      }
+    }
+    displayCells = false;
+    mode = "delete";
+    gol.generate();
+    gol.display();
+  }
+
+  if (fc == stf(165.9)) gol.randomize(); // randomize
+  if ((fc > stf(165.9)) && (fc < stf(245))) { // 
+    displayCells = true;
+    mode = "delete";
+    gol.generate();
+    gol.display();
+  }
+
+  if (fc == stf(245)) {
+    displayCells = false;
+    gol.generate();
+    gol.display();
+  }
+  // if ((fc < stf(255)) && (fc > stf(265))) { //
+  //   displayCells = false;
+  //   gol.display();
+  // }
+
+  if (fc == stf(255)) exit();
+  saveFrame("animation/#####.png");
+}
+
+// add image to the GOL board on click
+void mousePressed() {
+  switch (imgMode) {
+    case "placer":
+      int x = (int) mouseX - imgs[imgIndex].width/2;
+      int y = (int) mouseY - imgs[imgIndex].height/2;
+      gol.absorb(imgs[imgIndex], x, y);
+      imgIndex = (imgIndex + 1) % imgs.length;
+      tDisplayed = millis();
+      break;
+    case "creator":
+      gol.reviveCells(mouseX, mouseY);
+      break;
+  }
 }
 
 void keyPressed() {
-  if (key == 'q') {
-    // EDITED: currently not working with Processing 4
-    // videoExport.endMovie();
-    exit();
+  if (key == ' ') gol.randomize();
+  if (key == CODED) {
+    if (keyCode == DOWN) {
+    imgs[imgIndex].resize(int(imgs[imgIndex].width*0.9), 0);
+    } else if (keyCode == UP) {
+    imgs[imgIndex].resize(int(imgs[imgIndex].width*1.1), 0);
+    }
   }
+  if (key == 'b') displayCells = !displayCells;
+  if (key == '1') mode = "distort";
+  if (key == '2') mode = "eat";
+  if (key == '3') mode = "clarify";
+  if (key == '4') mode = "shift";
+  if (key == 'z') imgMode = "placer";
+  if (key == 'x') imgMode = "creator";
 }
 
-// include a possibility to only modify the 0's, and if it's 1 (AKA black) leave it be. 
-// like an ink spot expanding.
+String[] listFileNames(String dir) {
+  File f = new File(dir);
+  String[] files = f.list();
+  return files;
+}
+
+int stf(float seconds) { // secondsToFrame
+  return (int) (24 * seconds);
+}
+
+color invert(color c) {
+  return color(255-red(c), 255-green(c), 255-blue(c));
+}

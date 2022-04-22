@@ -1,134 +1,177 @@
-//
-// Game of Life class that manages the board where the
-// black and white pixels are going to be displayed, and
-// the rules applied to them. Also has a blackSpot method,
-// to create a black circle that grows incrementally, 
-// based on the generation it's in.
-//
+/*
+Game of Life class that manages the board where the black and white pixels are
+going to be displayed, and the rules applied to them.
+*/
 
 class GOL {
 
   // width of each cell in pixels
-  int w = 2;
+  int w = 5;
   int columns, rows;
-  int generation = 0;
 
-  // matrix where the 1's or 0's are going to be stored
-  int[][] board;
+  // matrix where the cell objects are going to be stored
+  Cell[][] board;
 
-  // get one PImage object as argument. For the moment, it
-  // has to be pre-processed to be only B&W and small sized
-  GOL(PImage img) {
-    img.resize(img.width/w, 0);
-    // set columns and rows
+  // Initialize columns, rows and board
+  GOL() {
     columns = width/w;
     rows = height/w;
-    board = new int[columns][rows];
-    // fill the board with the same pixels as the img
-    init(img);
+    board = new Cell[columns][rows];
+    init();
   }
 
-  void init(PImage img) {
-    int xOffset = int(columns/2 - img.width/2);
-    int yOffset = int(rows/2 - img.height/2);
-    img.loadPixels();
-    for (int x = 0; x < img.width; x++) {
-      for (int y = 0; y < img.height; y++) {
-        // get pixel array location equivalent
-        int location = x + y*img.width;
-        // and assign it to the board
-        if (img.pixels[location] == color(255)) {
-          board[x+xOffset][y+yOffset] = 0;
-        }
-        else {
-          board[x+xOffset][y+yOffset] = 1;
-        }
+  // Initialize all Cell objects
+  void init() {
+    for (int i = 0; i < columns; i++) {
+      for (int j = 0; j < rows; j++) {
+        board[i][j] = new Cell(i*w, j*w, w);
+        board[i][j].setColor(color(255));
       }
     }
   }
 
-  // compute the new generation and store it in a new matrix. 
-  // After computing, set board as this new one.
+  // The process of creating the new generation
   void generate() {
-    // next board
-    int[][] next = new int[columns][rows];
+    // Save previous state for all cells
+    for (int i = 0; i < columns;i++) {
+      for (int j = 0; j < rows;j++) {
+        board[i][j].savePrevious();
+      }
+    }
 
-    // loop through every spot in our 2D array and check spots neighbors
-    for (int x = 1; x < columns-1; x++) { // he's avoiding the edges
-      for (int y = 1; y < rows-1; y++) {
-        // add up all the states in a 3x3 surrounding grid
+    // Loop through every spot in our 2D array
+    for (int x = 0; x < columns; x++) {
+      for (int y = 0; y < rows; y++) {
+
+        // 1. GET NEIGHBORS
         int neighbors = 0;
         for (int i = -1; i <= 1; i++) {
           for (int j = -1; j <= 1; j++) {
-            neighbors += board[x+i][y+j];
+            neighbors += board[(x+i+columns)%columns][(y+j+rows)%rows].previous;
           }
         }
+        // Subtract the current cell's state since we added it in the above loop
+        neighbors -= board[x][y].previous;
 
-        // a little trick to subtract the current cell's state since
-        // we added it in the above loop
-        neighbors -= board[x][y];
+        // 2. RULES OF LIFE
+        if      ((board[x][y].state == 1) && (neighbors <  2)) board[x][y].setState(0); // Loneliness
+        else if ((board[x][y].state == 1) && (neighbors >  3)) board[x][y].setState(0); // Overpopulation
+        else if ((board[x][y].state == 0) && (neighbors == 3)) board[x][y].setState(1); // Reproduction
+        // else do nothing!
 
-        // rules of Life
-        if ((board[x][y] == 1) && (neighbors < 2)) {
-          next[x][y] = 0; // Loneliness
-        } else if ((board[x][y] == 1) && (neighbors > 3) && (neighbors < 6)) {
-          next[x][y] = 0; // overpopulation
-        } else if ((board[x][y] == 1) && (neighbors >= 6)) {
-          // if it's completely surrounded by 1's, leave it be,
-          // so only the "edges" are modified. Otherwise, the
-          // big bunches of black were deleted instantly
-          next[x][y] = 1; // survive in the overpopulation
-        } else if ((board[x][y] == 0) && (neighbors == 3)) {
-          next[x][y] = 1; // reproduction
-        } else {
-          next[x][y] = board[x][y]; // stasis
-        }
-      }
-    }
-
-    // this next matrix is now our board
-    board = next;
-    generation++;
-  }
-
-  // a function to create a black spot in the center of the board, after processing
-  // the next generation, and make it larger with each generation. The spot is going
-  // to be added "by force" after processing the generation, so it is permanent, so to speak.
-  void blackSpot() {
-    // radius of the circle (scaled with a factor to control the growth)
-    float scaling = 1.0;
-    int radius = int(generation*scaling);
-    // iterate through a centered square of side as radius:
-    for (int i = (columns-radius)/2; i < (columns+radius)/2; i++) {
-      for (int j = (rows-radius)/2; j < (rows+radius)/2; j++) {
-        // get coordinates relative to the center of the board:
-        int x = i - (columns)/2;
-        int y = j - (rows)/2;
-        float r = sqrt(sq(x)+sq(y));
-        if (r <= radius/2) {
-          // could be optimized, check if there's an operation that eludes me from doing all this ifs
-          if ((0 <= i) && (i < board.length) && (0 <= j) && (j < board[0].length)) {
-            board[i][j] = 1;
+        // 3. COLOR UPDATE
+        int r = 0, g = 0, b = 0;
+        int numColors = 0;
+        // if it was dead but is now alive
+        if ((board[x][y].previous == 0) && (board[x][y].state == 1)) {
+          switch (mode) {
+            case "distort":
+              for (int i = -1; i <= 1; i++) {
+                for (int j = -1; j <= 1; j++) {
+                  if (board[(x+i+columns)%columns][(y+j+rows)%rows].state == 1) {
+                    color c = board[(x+i+columns)%columns][(y+j+rows)%rows].c;
+                    r += red(c);
+                    g += green(c);
+                    b += blue(c);
+                    numColors++;
+                  }
+                }
+              }
+              r /= numColors; g /= numColors; b /= numColors;
+              board[x][y].setColor(color(r, g, b));
+              break;
+            case "eat":
+              board[x][y].setColor(color(random(255), random(255), random(255)));
+              break;
+            case "clarify":
+              color cClar = board[x][y].c;
+              board[x][y].setColor(color(red(cClar)+10, green(cClar)+10, blue(cClar)+10));
+              break;
+            case "delete":
+              color cShift = board[x][y].c;
+              int shift = 50;
+              board[x][y].setColor(color(red(cShift)+random(shift), green(cShift)+random(shift), blue(cShift)+random(shift)));
+              break;
           }
         }
       }
     }
   }
 
-  // just draw the cells. Draw only the 1's; the background is
-  // white, so the empty ones don't have to be drawn
-  void display() {
-    // eluding this makes it look like a ink spot expanding
-    background(255);
-    // black color
-    fill(0);
-    // and to avoid squaring (drawing the edges of the rectangles)
-    noStroke(); 
+  // Absorb the given image into the grid of cells
+  void absorb(PImage imgSrc, int imgX, int imgY) {
+    // Copy the image into another one
+    PImage img = createImage(imgSrc.width, imgSrc.height, RGB);
+    img.copy(imgSrc, 0, 0, imgSrc.width, imgSrc.height, 0, 0, imgSrc.width, imgSrc.height);
+    img.resize(img.width/w, img.height/w);
+    img.loadPixels();
+    // Convert the given coordinates from "pixels in the screen" to "board
+    // coordinates" (scale by the cell width)
+    int boardStartX = (int) imgX/w;
+    int boardStartY = (int) imgY/w;
+    // Iterate over the corresponding part of board
+    for (int i = boardStartX; i < boardStartX+img.width; i++) {
+      for (int j = boardStartY; j < boardStartY+img.height; j++) {
+        // If i or j are out of bounds, use the modified modulo to "constrain" them
+        int x = Math.floorMod(i, columns);
+        int y = Math.floorMod(j, rows);
+
+        int loc = (i-boardStartX) + (j-boardStartY)*img.width;
+        // Average the cell's color with the image one and its current color
+        color cImg = img.pixels[loc];
+        color cCell = board[x][y].c;
+        // average cImg and cCell if cCell is not black
+        // if (cCell != color(255)) {
+        //   float r = (red(cImg) + red(cCell))/2;
+        //   float g = (green(cImg) + green(cCell))/2;
+        //   float b = (blue(cImg) + blue(cCell))/2;
+        //   board[x][y].setColor(color(r, g, b));
+        // } else {
+          board[x][y].setColor(cImg);
+        // }
+        // float r, g, b;
+        // r = (red(cImg) + red(cCell))/2;
+        // g = (green(cImg) + green(cCell))/2;
+        // b = (blue(cImg) + blue(cCell))/2;
+        // board[x][y].setColor(color(r, g, b));
+        // Randomize the state of the cell
+        board[x][y].setState(int(random(2)));
+      }
+    }
+  }
+
+  // Set a random state in each cell
+  void randomize() {
     for (int i = 0; i < columns; i++) {
       for (int j = 0; j < rows; j++) {
-        if (board[i][j] == 1) {
-          rect(i*w, j*w, w, w);
-        }
+        board[i][j].setState(int(random(2)));
+      }
+    }
+  }
+
+  // Revive cells in the vicinity of the given location
+  void reviveCells(int screenX, int screenY) {
+    // Convert the given coordinates from "pixels in the screen" to "board
+    // coordinates" (scale by the cell width)
+    int boardX = (int) screenX/w;
+    int boardY = (int) screenY/w;
+    // Iterate over the corresponding part of board
+    for (int i = boardX-1; i <= boardX+1; i++) {
+      for (int j = boardY-1; j <= boardY+1; j++) {
+        // If i or j are out of bounds, use the modified modulo to "constrain" them
+        int x = Math.floorMod(i, columns);
+        int y = Math.floorMod(j, rows);
+        // Randomize the state of the cell
+        board[x][y].setState(1);
+      }
+    }
+  }
+
+  // Draw the cells with the inner rules that they have
+  void display() {
+    for (int i = 0; i < columns;i++) {
+      for (int j = 0; j < rows;j++) {
+        board[i][j].display();
       }
     }
   }
